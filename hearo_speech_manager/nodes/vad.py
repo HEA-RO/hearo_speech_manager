@@ -92,7 +92,7 @@ class VADSignalEngine:
 
     def __init__(
         self,
-        partial_interval_ms: int = 500,
+        partial_interval_ms: int = 100,
         vad_silence_ms: int = 4000,
     ):
         self.partial_interval = partial_interval_ms / 1000.0
@@ -221,7 +221,7 @@ class VADNode(Node):
 
         self.vad = VAD()
         self.signal_engine = VADSignalEngine(
-            partial_interval_ms=500, vad_silence_ms=4000
+            partial_interval_ms=100, vad_silence_ms=4000
         )
 
         # VAD 활성화 상태 플래그
