@@ -1,0 +1,26 @@
+# TTS Generate Service
+# Service for requesting Text-to-Speech generation
+# TTS (텍스트 음성 변환) 생성 요청 서비스
+
+# Request
+string text                 # Text to convert to speech (음성으로 변환할 텍스트)
+string backend              # TTS backend: "openai", "zonos_transformer", "zonos_hybrid", "auto"
+float32 speed               # Speech speed multiplier (음성 속도, -1 for default)
+string voice                # Voice type (음성 타입, empty for default)
+string language             # Language code (언어 코드, e.g., "ko", "en-us")
+bool return_audio_data      # Whether to return audio data in response (응답에 오디오 데이터 포함 여부)
+
+---
+
+# Response
+bool success                # Whether the request was successful (요청 성공 여부)
+string error_code           # Error code if failed (실패 시 에러 코드)
+string error_message        # Error message if failed (실패 시 에러 메시지)
+string backend_used         # Backend that was actually used (실제 사용된 백엔드)
+int32 n_chunks              # Number of audio chunks generated (생성된 오디오 청크 수)
+int32 n_sent_chunks         # Number of sentence-based chunks (문장 기반 청크 수)
+float32 audio_duration_sec  # Total audio duration in seconds (총 오디오 길이, 초)
+int32 audio_id              # Audio ID if stored in database (DB 저장 시 오디오 ID)
+uint8[] audio_data          # Full audio data if return_audio_data is true (전체 오디오 데이터)
+string audio_format         # Audio format (e.g., "mp3", "wav")
+

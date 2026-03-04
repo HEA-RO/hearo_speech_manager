@@ -1,0 +1,27 @@
+# GetOrCreateAudioId Service
+# 오디오 캐시 조회 + TTS 생성 + 캐시 저장을 단일 호출로 처리하는 서비스
+#
+# Flow:
+#   1. tb_audioCache에서 text로 기존 AudioID 조회
+#   2. 캐시 히트 → audio_id 즉시 반환 (GPU 로드 없음)
+#   3. 캐시 미스 → TTS 생성 → DB 저장 → audio_id 반환
+
+# Request
+string text                 # 음성으로 변환할 텍스트
+string backend              # TTS 백엔드: "auto", "openai", "zonos_transformer", "zonos_hybrid" (빈 문자열 = auto)
+float32 speed               # 음성 속도 배수 (0 = 기본값 사용)
+string voice                # 음성 타입 (빈 문자열 = 기본값)
+string language             # 언어 코드 (빈 문자열 = "ko")
+bool force_regeneration     # 캐시 존재해도 강제 재생성
+
+---
+
+# Response
+bool success                # 요청 성공 여부
+string error_code           # 실패 시 에러 코드 (예: TTS002, TTS004)
+string error_message        # 실패 시 에러 메시지
+int32 audio_id              # tb_audioCache의 AudioID
+int32 n_chunks              # 생성된 오디오 청크 수
+float32 audio_duration_sec  # 오디오 총 길이 (초)
+string backend_used         # 실제 사용된 TTS 백엔드
+bool cache_hit              # 캐시에서 반환되었는지 여부
