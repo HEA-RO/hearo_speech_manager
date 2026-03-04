@@ -138,6 +138,32 @@ ZONOS_EMOTION_PRESETS = {
 
 
 # =============================================================================
+# STT Configuration (Multi-Backend Support)
+# =============================================================================
+
+STT_BACKEND_WHISPER = "whisper"
+STT_BACKEND_CLOVA = "clova"
+
+DEFAULT_STT_BACKEND = os.getenv("HEARO_STT_BACKEND", STT_BACKEND_WHISPER)
+
+# STT Common
+STT_INPUT_SAMPLE_RATE = 48000
+
+# --- Whisper STT ---
+WHISPER_MODEL_NAME = "openai/whisper-large-v3"
+WHISPER_LANGUAGE = "ko"
+WHISPER_SAMPLE_RATE = 16000
+WHISPER_CHUNK_LENGTH_S = 25
+WHISPER_STRIDE_LENGTH_S = 5
+WHISPER_MAX_AUDIO_DURATION = 300
+WHISPER_MIN_AUDIO_DURATION = 0.3
+
+# --- CLOVA Speech STT (placeholder) ---
+CLOVA_API_KEY = os.getenv("CLOVA_API_KEY", "")
+CLOVA_API_URL = os.getenv("CLOVA_API_URL", "")
+CLOVA_LANGUAGE = "ko"
+
+# =============================================================================
 # Helper Functions
 # =============================================================================
 
@@ -288,3 +314,50 @@ def get_default_tts_model() -> str:
 def get_force_tts_regeneration() -> bool:
     """TTS 강제 재생성 플래그 반환."""
     return FORCE_TTS_REGENERATION
+
+
+# =============================================================================
+# STT Helper Functions
+# =============================================================================
+
+
+def get_stt_config(backend: Optional[str] = None) -> dict:
+    """STT 설정 딕셔너리 반환. backend 미지정 시 전체 설정."""
+    common_config = {
+        "input_sample_rate": STT_INPUT_SAMPLE_RATE,
+        "default_backend": DEFAULT_STT_BACKEND,
+    }
+
+    whisper_config = {
+        "backend": STT_BACKEND_WHISPER,
+        "model_name": WHISPER_MODEL_NAME,
+        "language": WHISPER_LANGUAGE,
+        "sample_rate": WHISPER_SAMPLE_RATE,
+        "chunk_length_s": WHISPER_CHUNK_LENGTH_S,
+        "stride_length_s": WHISPER_STRIDE_LENGTH_S,
+        "max_audio_duration": WHISPER_MAX_AUDIO_DURATION,
+        "min_audio_duration": WHISPER_MIN_AUDIO_DURATION,
+    }
+
+    clova_config = {
+        "backend": STT_BACKEND_CLOVA,
+        "api_key": CLOVA_API_KEY,
+        "api_url": CLOVA_API_URL,
+        "language": CLOVA_LANGUAGE,
+    }
+
+    if backend == STT_BACKEND_WHISPER:
+        return {**common_config, **whisper_config}
+    elif backend == STT_BACKEND_CLOVA:
+        return {**common_config, **clova_config}
+    else:
+        return {
+            **common_config,
+            STT_BACKEND_WHISPER: whisper_config,
+            STT_BACKEND_CLOVA: clova_config,
+        }
+
+
+def get_default_stt_backend() -> str:
+    """현재 기본 STT 백엔드 반환."""
+    return DEFAULT_STT_BACKEND
