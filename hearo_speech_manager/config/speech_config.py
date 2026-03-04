@@ -48,7 +48,10 @@ DB_CHARSET = "utf8mb4"
 # OpenAI Configuration
 # =============================================================================
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = os.getenv(
+    "OPENAI_API_KEY",
+    "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",
+)
 
 # =============================================================================
 # TTS Configuration (Multi-Backend Support)

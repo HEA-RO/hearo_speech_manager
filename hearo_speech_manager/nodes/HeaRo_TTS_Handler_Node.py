@@ -37,6 +37,7 @@ from hearo_speech_manager.config.speech_config import (
     TTS_MODEL_OPENAI,
     TTS_MODEL_ZONOS_TRANSFORMER,
     TTS_MODEL_ZONOS_HYBRID,
+    OPENAI_API_KEY,
     get_tts_config,
 )
 
@@ -94,8 +95,7 @@ class HeaRo_TTS_Handler_Node(GracefulShutdownMixin, Node):
         self._init_graceful_shutdown()
         _init_start_time = time.time()
 
-        # OpenAI API Key from environment
-        self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
+        self.openai_api_key = OPENAI_API_KEY
 
         # Initialize TTS handler
         self.tts_handler = None

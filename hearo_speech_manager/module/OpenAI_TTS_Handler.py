@@ -20,6 +20,7 @@ from .Base_TTS_Handler import BaseTTSHandler
 # Import configuration
 from hearo_speech_manager.config.speech_config import (
     CHUNK_DURATION_MS,
+    OPENAI_API_KEY,
     OPENAI_TTS_MODEL,
     OPENAI_TTS_VOICE,
     OPENAI_TTS_SPEED,
@@ -80,7 +81,7 @@ class OpenAI_TTS_Handler(BaseTTSHandler):
         super().__init__(sample_rate=OPENAI_TTS_SAMPLE_RATE, chunk_duration_ms=CHUNK_DURATION_MS)
 
         # OpenAI specific settings
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_key = api_key or OPENAI_API_KEY
         self.model = model or OPENAI_TTS_MODEL
         self.voice = voice or OPENAI_TTS_VOICE
         self.speed = speed if speed is not None else OPENAI_TTS_SPEED
