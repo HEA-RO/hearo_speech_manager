@@ -2,16 +2,18 @@
 """
 HeaRo Speech Manager Launch File
 
-VAD, Google STT, Whisper STT, TTS Handler 노드를 포함합니다.
+VAD, Google STT, Whisper STT, TTS Handler 노드를 실행합니다.
 각 노드를 개별 활성화/비활성화할 수 있으며, TTS Handler는
 PYTORCH_CUDA_ALLOC_CONF 환경변수와 DB 접속 환경변수를 설정합니다.
 
 사용법:
-    # 전체 노드 실행
-    ros2 launch hearo_speech_manager hearo_speech_manager.launch.py
+    # 전체 노드 실행 (OPENAI_API_KEY 전달)
+    ros2 launch hearo_speech_manager hearo_speech_manager.launch.py \\
+        openai_api_key:="sk-proj-..."
 
     # TTS Handler만 실행
     ros2 launch hearo_speech_manager hearo_speech_manager.launch.py \\
+        openai_api_key:="sk-proj-..." \\
         use_vad:=false use_google_stt:=false use_stt_node:=false
 
     # VAD + STT만 실행 (TTS 비활성화)
@@ -22,7 +24,7 @@ import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, EnvironmentVariable
 
 
 def generate_launch_description():
@@ -40,6 +42,13 @@ def generate_launch_description():
     )
     use_tts_handler_arg = DeclareLaunchArgument(
         "use_tts_handler", default_value="true", description="Enable TTS Handler node"
+    )
+
+    # OpenAI API Key (required for TTS)
+    openai_api_key_arg = DeclareLaunchArgument(
+        "openai_api_key",
+        default_value=EnvironmentVariable("OPENAI_API_KEY", default_value=""),
+        description="OpenAI API Key for TTS generation",
     )
 
     # DB environment variable arguments
@@ -65,12 +74,19 @@ def generate_launch_description():
     use_google_stt = LaunchConfiguration("use_google_stt")
     use_stt_node = LaunchConfiguration("use_stt_node")
     use_tts_handler = LaunchConfiguration("use_tts_handler")
+    openai_api_key = LaunchConfiguration("openai_api_key")
 
     db_host = LaunchConfiguration("db_host")
     db_port = LaunchConfiguration("db_port")
     db_user = LaunchConfiguration("db_user")
     db_password = LaunchConfiguration("db_password")
     db_name = LaunchConfiguration("db_name")
+
+    # ========== Shared environment for all nodes ==========
+
+    shared_env = {
+        "OPENAI_API_KEY": openai_api_key,
+    }
 
     # ========== Banner ==========
 
@@ -90,6 +106,7 @@ def generate_launch_description():
         cmd=["python3", "-m", "hearo_speech_manager.nodes.vad"],
         name="HeaRo_VAD",
         output="screen",
+        additional_env=shared_env,
         condition=IfCondition(use_vad),
     )
 
@@ -97,6 +114,7 @@ def generate_launch_description():
         cmd=["python3", "-m", "hearo_speech_manager.nodes.google_stt"],
         name="HeaRo_Google_STT",
         output="screen",
+        additional_env=shared_env,
         condition=IfCondition(use_google_stt),
     )
 
@@ -104,6 +122,7 @@ def generate_launch_description():
         cmd=["python3", "-m", "hearo_speech_manager.nodes.stt_node"],
         name="HeaRo_Whisper_STT",
         output="screen",
+        additional_env=shared_env,
         condition=IfCondition(use_stt_node),
     )
 
@@ -112,6 +131,7 @@ def generate_launch_description():
         name="HeaRo_TTS_Handler",
         output="screen",
         additional_env={
+            **shared_env,
             "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
             "HEARO_DB_HOST": db_host,
             "HEARO_DB_PORT": db_port,
@@ -129,6 +149,7 @@ def generate_launch_description():
             use_google_stt_arg,
             use_stt_node_arg,
             use_tts_handler_arg,
+            openai_api_key_arg,
             db_host_arg,
             db_port_arg,
             db_user_arg,
